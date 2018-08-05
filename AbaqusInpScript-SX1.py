@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # ================================== Input File ===========================================
-InpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SX1-Test.inp"
-NewInpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SX1-Testg.inp"
+InpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SX1.inp"
+NewInpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SX1g.inp"
 
 # ================================== Read File ===========================================
 file = open(InpFile, 'r')
