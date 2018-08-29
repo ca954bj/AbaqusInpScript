@@ -2,13 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # ================================== Input File ===========================================
-InpFile = "C:\\temp\\Specimen-SX1Newfo.inp"
-NewInpFile = "C:\\temp\\Specimen-SX1Newf.inp"
+InpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SY2To.inp"
+NewInpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SY2T.inp"
 
 # ================================== Read File ===========================================
 file = open(InpFile, 'r')
 file2 = open(NewInpFile, 'w')
-#eles = [4571, 4586, 4679, 4772, 4672, 4765, 4678, 4771, 4677, 4770, 4676, 4769, 4675, 4768, 4674, 4767, 4673, 4766, 4570, 4585]
 
 # =================================== Predefined functions ================================
 def RotationMatrix(x1, y1, z1, x2, y2, z2, s):
@@ -169,10 +168,9 @@ class Instance:
         else:
             return map(lambda x: [x[0]] + NodeTranslation(x[1:], self.Translation, self.Rotation[-1]*np.pi/180, self.Rotation[0:-1]), partnodeset)
 
-#flag1 = 0
-#flag2 = 0
-flag3 = 0
-#flag4 = 0
+
+
+
 flagPart = 0
 flagNode = 0
 flagInstance = 0
@@ -236,79 +234,34 @@ for line in file:
     if line.startswith("*End Instance"):
         flagInstance = 0
         flagNode = 0
-    # Find Specified Elements in SteelTubeV3
-    '''if "SteelTubeV3" in line:
-        flag1 = 1
-    if "Element," in line and flag1 == 1:
-        flag2 = 1
-    if "End Part" in line and flag1 == 1 and flag2 == 1:
-        flag1 = 0
-        flag2 = 0
-    if flag4 == 1:
-        flag3 = 1
-        flag4 = 0
-    if flag1 == 1 and flag2 == 1:
-        for item in eles:
-            itemn = str(item) + ','
-            telength = len(line.split(","))
-            if line.startswith(itemn) and telength > 12:
-                flag3 = 1
-                counter += 1
-                flag4 = 1'''
+
+    if flagPosition >= 3:
+        flagPosition = 0
+
+    if flagPosition >= 1 and flagPosition < 3:
+        flagPosition = flagPosition + 1
 
     # ====== Find Node Pairs ====================================================================
     if line.startswith("*End Assembly"):
-        # Print parts and instances
-        for item in Part.instances:
-            print(item.name)
-
-        print("==================================")
-        print(len(Instance.instances))
-        for item in Instance.instances:
-            if item.translation() == []:
-                print(item.name, "No", "No")
-            elif item.rotation() == []:
-                print(item.name, "Yes", "No")
-            else:
-                print(item.name, "Yes", "Yes")
-
-        # Begin to find nodes
         PairCounter = 0
 
-        # Find Part and instances
-        SteelRodPart = filter(lambda x: x.name.startswith("SteelRodBody"), Part.instances)[0]
-        SteelRod1 = filter(lambda x: x.name == "SteelRodBody-1", Instance.instances)[0]
-        SteelRod2 = filter(lambda x: x.name == "SteelRodBody-1-lin-1-2", Instance.instances)[0]
-        SteelRod3 = filter(lambda x: x.name == "SteelRodBody-1-lin-2-1", Instance.instances)[0]
-        SteelRod4 = filter(lambda x: x.name == "SteelRodBody-1-lin-2-2", Instance.instances)[0]
-        SteelRod1NodeSet = SteelRod1.transnodeset(SteelRodPart.nodeset())
-        SteelRod2NodeSet = SteelRod2.transnodeset(SteelRodPart.nodeset())
-        SteelRod3NodeSet = SteelRod3.transnodeset(SteelRodPart.nodeset())
-        SteelRod4NodeSet = SteelRod4.transnodeset(SteelRodPart.nodeset())
+        # Find Part and Instances
+        InternalStiffenerPart = filter(lambda x: x.name.startswith("InternalStiffener"), Part.instances)[0]
+        BeamSolidPart = filter(lambda x: x.name.startswith("BeamSolid"), Part.instances)[0]
+        BeamFarPart = filter(lambda x: x.name.startswith("BeamFar"), Part.instances)[0]
+        InternalStiffenerPart = filter(lambda x: x.name.startswith("InternalStiffener"), Part.instances)[0]
+        SidePlatePart = filter(lambda x: x.name.startswith("SidePlate"), Part.instances)[0]
+        FinPlatePart = filter(lambda x: x.name.startswith("FinPlate"), Part.instances)[0]
+        SteelTubePart = filter(lambda x: x.name.startswith("SteelTubeV6"), Part.instances)[0]
 
-        ConcreteCore = filter(lambda x: x.name == "ConcreteCore-1", Instance.instances)[0]
-        ConcreteCorePart = filter(lambda x: x.name.startswith("ConcreteCore"), Part.instances)[0]
-        ConcreteCoreNodeSet = ConcreteCore.transnodeset(ConcreteCorePart.nodeset())
-
-        FinPlatePart = filter(lambda x: x.name.startswith('''"Column1 v144-186"'''), Part.instances)[0]
-        FinPlate1 = filter(lambda x: x.name == '''"Column1 v144-186-1"''', Instance.instances)[0]
-        FinPlate2 = filter(lambda x: x.name == '''"Column1 v144-186-2"''', Instance.instances)[0]
-        FinPlate1NodeSet = FinPlate1.transnodeset(FinPlatePart.nodeset())
-        FinPlate2NodeSet = FinPlate2.transnodeset(FinPlatePart.nodeset())
-
-        SteelTubePart = filter(lambda x: x.name.startswith("SteelTubeV3"), Part.instances)[0]
-        SteelTube = filter(lambda x: x.name == "SteelTubeV3-1", Instance.instances)[0]
-        SteelTubeNodeSet = SteelTube.transnodeset(SteelTubePart.nodeset())
-
-        FlangeCleatPart = filter(lambda x: x.name.startswith("FlangeCleatV2"), Part.instances)[0]
-        FlangeCleat1 = filter(lambda x: x.name == "FlangeCleatV2-1", Instance.instances)[0]
-        FlangeCleat2 = filter(lambda x: x.name == "FlangeCleatV2-2", Instance.instances)[0]
-        FlangeCleat3 = filter(lambda x: x.name == "FlangeCleatV2-3", Instance.instances)[0]
-        FlangeCleat4 = filter(lambda x: x.name == "FlangeCleatV2-4", Instance.instances)[0]
-        FlangeCleat1NodeSet = FlangeCleat1.transnodeset(FlangeCleatPart.nodeset())
-        FlangeCleat2NodeSet = FlangeCleat2.transnodeset(FlangeCleatPart.nodeset())
-        FlangeCleat3NodeSet = FlangeCleat3.transnodeset(FlangeCleatPart.nodeset())
-        FlangeCleat4NodeSet = FlangeCleat4.transnodeset(FlangeCleatPart.nodeset())
+        InternalStiffener1 = filter(lambda x: x.name.startswith("InternalStiffener-1"), Instance.instances)[0]
+        InternalStiffener2 = filter(lambda x: x.name.startswith("InternalStiffener-2"), Instance.instances)[0]
+        SidePlate1 = filter(lambda x: x.name.startswith("SidePlate-1"), Instance.instances)[0]
+        SidePlate2 = filter(lambda x: x.name.startswith("SidePlate-2"), Instance.instances)[0]
+        FinPlate2 = filter(lambda x: x.name.startswith("FinPlate-2"), Instance.instances)[0]
+        SteelTube = filter(lambda x: x.name.startswith("SteelTubeV6-1"), Instance.instances)[0]
+        BeamSolid = filter(lambda x: x.name.startswith("BeamSolid"), Instance.instances)[0]
+        BeamFar = filter(lambda x: x.name.startswith("BeamFar"), Instance.instances)[0]
 
         # Define Spring in three directions
         file2.write("*Spring, elset=XSpring\n")
@@ -321,178 +274,186 @@ for line in file:
         file2.write("3, 3\n")
         file2.write("1e+07\n")
 
-        # ========================= Processing Steel Rods ===========================================
-        file2.write("** ================================ SteelRod 1 ==============================\n")
-        for i, obji in enumerate(ConcreteCoreNodeSet):
-            for j, objj in enumerate(SteelRod1NodeSet):
-                if 12.4 < ((obji[1] - objj[1])**2 + (obji[2] - objj[2])**2 + (obji[3] - objj[3])**2)**0.5 < 12.6:
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=YSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod1.name, objj[0], ConcreteCore.name, obji[0]))
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=ZSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod1.name, objj[0], ConcreteCore.name, obji[0]))
+        # ======================================== Side Plate and Internal Stiffener ==================================
 
-        file2.write("** ================================ SteelRod 2 ==============================\n")
-        for i, obji in enumerate(ConcreteCoreNodeSet):
-            for j, objj in enumerate(SteelRod2NodeSet):
-                if 12.4 < ((obji[1] - objj[1])**2 + (obji[2] - objj[2])**2 + (obji[3] - objj[3])**2)**0.5 < 12.6:
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=YSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod2.name, objj[0], ConcreteCore.name, obji[0]))
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=ZSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod2.name, objj[0], ConcreteCore.name, obji[0]))
+        nodenum = len(SidePlatePart.nodeset())
+        SidePlate1NodeSet = SidePlate1.transnodeset(SidePlatePart.nodeset())
+        SidePlate2NodeSet = SidePlate2.transnodeset(SidePlatePart.nodeset())
+        InternalStiffener1NodeSet = InternalStiffener1.transnodeset(InternalStiffenerPart.nodeset())
+        InternalStiffener2NodeSet = InternalStiffener2.transnodeset(InternalStiffenerPart.nodeset())
+        SteelTubeNodeSet = SteelTube.transnodeset(SteelTubePart.nodeset())
+        FinPlate2NodeSet = FinPlate2.transnodeset(FinPlatePart.nodeset())
+        BeamSolidNodeSet = BeamSolid.transnodeset(BeamSolidPart.nodeset())
+        BeamFarNodeSet = BeamFar.transnodeset(BeamFarPart.nodeset())
 
-        file2.write("** ================================ SteelRod 3 ==============================\n")
-        for i, obji in enumerate(ConcreteCoreNodeSet):
-            for j, objj in enumerate(SteelRod3NodeSet):
-                if 12.4 < ((obji[1] - objj[1])**2 + (obji[2] - objj[2])**2 + (obji[3] - objj[3])**2)**0.5 < 12.6:
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=YSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod3.name, objj[0], ConcreteCore.name, obji[0]))
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=ZSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod3.name, objj[0], ConcreteCore.name, obji[0]))
-
-        file2.write("** ================================ SteelRod 4 ==============================\n")
-        for i, obji in enumerate(ConcreteCoreNodeSet):
-            for j, objj in enumerate(SteelRod4NodeSet):
-                if 12.4 < ((obji[1] - objj[1])**2 + (obji[2] - objj[2])**2 + (obji[3] - objj[3])**2)**0.5 < 12.6:
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=YSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod4.name, objj[0], ConcreteCore.name, obji[0]))
-                    PairCounter += 1
-                    file2.write("*Element, type=Spring2, elset=ZSpring\n")
-                    file2.write("%d, %s.%d, %s.%d\n" % (PairCounter, SteelRod4.name, objj[0], ConcreteCore.name, obji[0]))
-
-        # ====================================== Fin Plates ==========================================
+        # ============ Side Plate and Internal Stiffener ====================
         def BoundFunction(x):
-            BoundX = -410.1 <= x[1] <= -409.9
-            BoundY = 1214.9 <= x[2] <= 1475.1
-            BoundZ = 92.9 <= x[3] <= 93.1 or 102.9 <= x[3] <= 103.1
+            BoundX = -455.1 <= x[1] <= -299.9
+            BoundY = 1529.9 <= x[2] <= 1530.1
+            BoundZ = 104.9 <= x[3] <= 105.1 or 74.9 <= x[3] <= 75.1
             condition1 = BoundX and BoundY and BoundZ
 
-            if condition1:
+            BoundX = -455.1 <= x[1] <= -454.9
+            BoundY = 1529.9 <= x[2] <= 1530.1
+            BoundZ = 74.9 <= x[3] <= 105.1
+            condition2 = BoundX and BoundY and BoundZ
+
+            if condition1 or condition2:
+                return True
+            else:
+                return False
+
+        FWSP1IS1 = InterNodes(SidePlate1.name, SidePlate1NodeSet, InternalStiffener1.name, InternalStiffener1NodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
+        PairCounter = FWSP1IS1.pairnum
+
+        def BoundFunction(x):
+            BoundX = -455.1 <= x[1] <= -299.9
+            BoundY = 1159.9 <= x[2] <= 1160.1
+            BoundZ = 104.9 <= x[3] <= 105.1 or 74.9 <= x[3] <= 75.1
+            condition1 = BoundX and BoundY and BoundZ
+
+            BoundX = -455.1 <= x[1] <= -454.9
+            BoundY = 1159.9 <= x[2] <= 1160.1
+            BoundZ = 74.9 <= x[3] <= 105.1
+            condition2 = BoundX and BoundY and BoundZ
+
+            if condition1 or condition2:
+                return True
+            else:
+                return False
+
+        FWSP2IS2 = InterNodes(SidePlate2.name, SidePlate2NodeSet, InternalStiffener2.name, InternalStiffener2NodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
+        PairCounter = FWSP2IS2.pairnum
+
+        # =========================== Internal Stiffener and Steel Tube =============================
+        def BoundFunction(x):
+            BoundX = -300.1 <= x[1] <= -299.9 or -80.1 <= x[1] <= -79.9
+            BoundY = 1529.9 <= x[2] <= 1630.1
+            BoundZ = 104.9 <= x[3] <= 105.1 or 74.9 <= x[3] <= 75.1
+            condition1 = BoundX and BoundY and BoundZ
+
+            BoundX = -300.1 <= x[1] <= -299.9 or -80.1 <= x[1] <= -79.9
+            BoundY = 1629.9 <= x[2] <= 1630.1
+            BoundZ = 74.9 <= x[3] <= 105.1
+            condition2 = BoundX and BoundY and BoundZ
+
+            if condition1 or condition2:
                 return True
             else:
                 return False
 
 
-        FWFP1C = InterNodes(FinPlate1.name, FinPlate1NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
-        PairCounter = FWFP1C.pairnum
+        FWIS1C = InterNodes(SteelTube.name, SteelTubeNodeSet, InternalStiffener1.name, InternalStiffener1NodeSet, BoundFunction, file2, [1, 2, 3], PairCounter, tol=0.5)
+        PairCounter = FWIS1C.pairnum
 
         def BoundFunction(x):
-            BoundX = 29.9 <= x[1] <= 30.1
-            BoundY = 1214.9 <= x[2] <= 1475.1
-            BoundZ = 92.9 <= x[3] <= 93.1 or 102.9 <= x[3] <= 103.1
+            BoundX = -300.1 <= x[1] <= -299.9 or -80.1 <= x[1] <= -79.9
+            BoundY = 1059.9 <= x[2] <= 1160.1
+            BoundZ = 104.9 <= x[3] <= 105.1 or 74.9 <= x[3] <= 75.1
             condition1 = BoundX and BoundY and BoundZ
 
-            if condition1:
+            BoundX = -300.1 <= x[1] <= -299.9 or -80.1 <= x[1] <= -79.9
+            BoundY = 1059.9 <= x[2] <= 1060.1
+            BoundZ = 74.9 <= x[3] <= 105.1
+            condition2 = BoundX and BoundY and BoundZ
+
+            if condition1 or condition2:
                 return True
             else:
                 return False
 
+        FWIS2C = InterNodes(SteelTube.name, SteelTubeNodeSet, InternalStiffener2.name, InternalStiffener2NodeSet, BoundFunction, file2, [1, 2, 3], PairCounter, tol=0.5)
+        PairCounter = FWIS2C.pairnum
+
+        #=============================== Side Plate and Steel Tube =========================
+        def BoundFunction(x):
+            BoundX = -300.1 <= x[1] <= -299.9
+            BoundY = 1529.9 <= x[2] <= 1530.1
+            BoundZ = 4.9 <= x[3] <= 65.1 or 114.9 <= x[3] <= 175.1
+            condition1 = BoundX and BoundY and BoundZ
+
+            BoundX = -300.1 <= x[1] <= -299.9
+            BoundY = 1519.9 <= x[2] <= 1520.1
+            BoundZ = 4.9 <= x[3] <= 175.1
+            condition2 = BoundX and BoundY and BoundZ
+
+            if condition1 or condition2:
+                return True
+            else:
+                return False
+
+        FWSP1C = InterNodes(SidePlate1.name, SidePlate1NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
+        PairCounter = FWSP1C.pairnum
+
+
+        def BoundFunction(x):
+            BoundX = -300.1 <= x[1] <= -299.9
+            BoundY = 1159.9 <= x[2] <= 1160.1
+            BoundZ = 4.9 <= x[3] <= 65.1 or 114.9 <= x[3] <= 175.1
+            condition1 = BoundX and BoundY and BoundZ
+
+            BoundX = -300.1 <= x[1] <= -299.9
+            BoundY = 1169.9 <= x[2] <= 1170.1
+            BoundZ = 4.9 <= x[3] <= 175.1
+            condition2 = BoundX and BoundY and BoundZ
+
+            if condition1 or condition2:
+                return True
+            else:
+                return False
+
+
+        FWSP2C = InterNodes(SidePlate2.name, SidePlate2NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
+        PairCounter = FWSP2C.pairnum
+
+
+        # ======================== Fin Plate and Steel Tube =================================
+
+        def BoundFunction(x):
+            BoundX = -300.1 <= x[1] <= -299.9
+            BoundY = 1214.9 <= x[2] <= 1475.1
+            BoundZ = 102.9 <= x[3] <= 103.1 or 92.9 <= x[3] <= 93.1
+            condition1 = BoundX and BoundY and BoundZ
+            if condition1:
+                return True
+            else:
+                return False
 
         FWFP2C = InterNodes(FinPlate2.name, FinPlate2NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
         PairCounter = FWFP2C.pairnum
 
-        # ========================================= Flange Cleats =========================================
+
+        # ======================== BeamSolid and BeamFar =================================
+
         def BoundFunction(x):
-            BoundX = -410.1 <= x[1] <= -409.9
-            BoundY = 1529.9 <= x[2] <= 1630.1
-            BoundZ = 4.9 <= x[3] <= 5.1 or 174.9 <= x[3] <= 175.1
-            condition1 = BoundX and BoundY and BoundZ
-
-            BoundX = -410.1 <= x[1] <= -409.9
-            BoundY = 1629.9 <= x[2] <= 1630.1
-            BoundZ = 4.9 <= x[3] <= 175.1
-            condition2 = BoundX and BoundY and BoundZ
-
-            if condition1 or condition2:
+            BoundX = -810.1 <= x[1] <= -809.9
+            condition1 = BoundX
+            if condition1:
                 return True
             else:
                 return False
 
 
-        FWFC1C = InterNodes(FlangeCleat1.name, FlangeCleat1NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
-        PairCounter = FWFC1C.pairnum
+        BSBF = InterNodes(BeamSolid.name, BeamSolidNodeSet, BeamFar.name, BeamFarNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
+        PairCounter = BSBF.pairnum
 
-        def BoundFunction(x):
-            BoundX = 29.9 <= x[1] <= 30.1
-            BoundY = 1529.9 <= x[2] <= 1630.1
-            BoundZ = 4.9 <= x[3] <= 5.1 or 174.9 <= x[3] <= 175.1
-            condition1 = BoundX and BoundY and BoundZ
-
-            BoundX = 29.9 <= x[1] <= 30.1
-            BoundY = 1629.9 <= x[2] <= 1630.1
-            BoundZ = 4.9 <= x[3] <= 175.1
-            condition2 = BoundX and BoundY and BoundZ
-
-            if condition1 or condition2:
-                return True
-            else:
-                return False
-
-
-        FWFC2C = InterNodes(FlangeCleat2.name, FlangeCleat2NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
-        PairCounter = FWFC2C.pairnum
-
-        def BoundFunction(x):
-            BoundX = -410.1 <= x[1] <= -409.9
-            BoundY = 1059.9 <= x[2] <= 1160.1
-            BoundZ = 4.9 <= x[3] <= 5.1 or 174.9 <= x[3] <= 175.1
-            condition1 = BoundX and BoundY and BoundZ
-
-            BoundX = -410.1 <= x[1] <= -409.9
-            BoundY = 1059.9 <= x[2] <= 1060.1
-            BoundZ = 4.9 <= x[3] <= 175.1
-            condition2 = BoundX and BoundY and BoundZ
-
-            if condition1 or condition2:
-                return True
-            else:
-                return False
-
-
-        FWFC3C = InterNodes(FlangeCleat3.name, FlangeCleat3NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
-        PairCounter = FWFC3C.pairnum
-
-        def BoundFunction(x):
-            BoundX = 29.9 <= x[1] <= 30.1
-            BoundY = 1059.9 <= x[2] <= 1160.1
-            BoundZ = 4.9 <= x[3] <= 5.1 or 174.9 <= x[3] <= 175.1
-            condition1 = BoundX and BoundY and BoundZ
-
-            BoundX = 29.9 <= x[1] <= 30.1
-            BoundY = 1059.9 <= x[2] <= 1060.1
-            BoundZ = 4.9 <= x[3] <= 175.1
-            condition2 = BoundX and BoundY and BoundZ
-
-            if condition1 or condition2:
-                return True
-            else:
-                return False
-
-
-        FWFC4C = InterNodes(FlangeCleat4.name, FlangeCleat4NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
-        PairCounter = FWFC4C.pairnum
-
-    if flag3 == 0:
-        file2.write(line)
-
-    if flagPosition >= 3:
-        flagPosition = 0
-
-    if flagPosition >= 1 and flagPosition < 3:
-        flagPosition = flagPosition + 1
-
-    # end of each line
-    flag3 = 0
+    file2.write(line)
 
 
 file.close()
 file2.close()
+for item in Part.instances:
+    print(item.name)
+
+print("==================================")
+print(len(Instance.instances))
+for item in Instance.instances:
+    if item.translation() == []:
+        print(item.name, "No", "No")
+    elif item.rotation() == []:
+        print(item.name, "Yes", "No")
+    else:
+        print(item.name, "Yes", "Yes")
 
 
 newnode = NodeTranslation([7.34731579, 53, -10.1127129], [-345, 1110.0, 47], 2*np.pi/3, [-345, 1110.0, 47, -344.42265, 1109.42265, 47.57735])

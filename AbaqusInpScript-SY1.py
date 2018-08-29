@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # ================================== Input File ===========================================
-InpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SY1.inp"
-NewInpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SY1g.inp"
+InpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SY1o.inp"
+NewInpFile = "/media/chenting/Work/ProgramCode/AbaqusInpScript2/Specimen-SY1.inp"
 
 # ================================== Read File ===========================================
 file = open(InpFile, 'r')
@@ -485,7 +485,7 @@ for line in file:
         FWSP4C = InterNodes(SidePlate4.name, SidePlate4NodeSet, SteelTube.name, SteelTubeNodeSet, BoundFunction, file2, [1, 2, 3], PairCounter)
         PairCounter = FWSP4C.pairnum
 
-        # ======================== Fin Plate and Steel Rod =================================
+        # ======================== Fin Plate and Steel Tube =================================
         def BoundFunction(x):
             BoundX = -80.1 <= x[1] <= -79.9
             BoundY = 1214.9 <= x[2] <= 1475.1
